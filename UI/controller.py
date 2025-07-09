@@ -40,12 +40,12 @@ class Controller:
         self._view.update_page()
 
     def handle_dettagli(self, e):
+        pass
+
+    def handle_path(self, e):
         cammino, pesoTot = self._model.getMaxCammino()
-        self._view.txt_result2.controls.append(ft.Text(f"Cammino massimo trovato con {len(cammino)} nodi e peso {pesoTot}, di seguito i nodi:"))
+        self._view.txt_result2.controls.append(
+            ft.Text(f"Cammino massimo trovato con {len(cammino)} nodi e peso {pesoTot}, di seguito i nodi:"))
         for n in cammino:
             self._view.txt_result2.controls.append(ft.Text(n))
         self._view.update_page()
-
-
-    def handle_path(self, e):
-        pass

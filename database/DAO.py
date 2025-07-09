@@ -72,26 +72,25 @@ class DAO():
             print("Connessione fallita")
         else:
             cursor = cnx.cursor(dictionary=True)
-            query = """SELECT t1.g1 as g1, t2.g2 as g2, i.Expression_Corr as peso
-                        FROM interactions i, 
-                                (SELECT g.GeneID as g1, c.Localization as l1
-                                FROM genes g, classification c
-                                WHERE g.GeneID = c.GeneID
-                                    and g.Chromosome >= %s
-                                    and g.Chromosome <= %s) t1,
-                                (SELECT g.GeneID as g2, c.Localization as l2
-                                FROM genes g, classification c
-                                WHERE g.GeneID = c.GeneID
-                                    and g.Chromosome >= %s
-                                    and g.Chromosome <= %s) t2
-                        WHERE  t1.g1 != t2.g2
-                                and t1.l1 = t2.l2
-                                and ((i.GeneID1 = t1.g1 and i.GeneID2 = t2.g2 ) or (i.GeneID1 = t2.g2 and i.GeneID2 = t1.g1))
-                                """
+            query = """SELECT DISTINCT t1.g1 as g1, t1.f1 as f1, t2.g2 as g2, t2.f2 as f2, i.Expression_Corr as peso
+                        FROM interactions i,
+                          (SELECT g.GeneID AS g1, `Function` AS f1, g.Chromosome, c.Localization
+                           FROM genes g
+                           JOIN classification c ON g.GeneID = c.GeneID
+                           WHERE g.Chromosome BETWEEN %s AND %s) t1,
+                           (SELECT g.GeneID AS g2, `Function` AS f2, g.Chromosome, c.Localization
+                           FROM genes g
+                           JOIN classification c ON g.GeneID = c.GeneID
+                           WHERE g.Chromosome BETWEEN %s AND %s) t2
+                          WHERE ((i.GeneID1 = t1.g1 AND i.GeneID2 = t2.g2)
+                            OR (i.GeneID2 = t1.g1 AND i.GeneID1 = t2.g2))
+                          AND t1.g1 <> t2.g2
+                          AND t1.Localization = t2.Localization
+                          AND t1.Chromosome <= t2.Chromosome"""
             cursor.execute(query, (cMin, cMax, cMin, cMax))
 
             for row in cursor:
-                result.append((row['g1'], row['g2'], row['peso']))
+                result.append((row['g1'], row['f1'], row['g2'], row['f2'], row['peso']))
 
             cursor.close()
             cnx.close()
